@@ -14,6 +14,8 @@ module Data.CLI.Impl (
   mkCommands,
   usage,
   usageWith,
+  usageTreeWith,
+  commandTree,
   HelpStyle (..),
   defaultHelpStyle,
   plainHelpStyle,
@@ -26,22 +28,31 @@ import Data.Bifunctor (first)
 import Data.CLI.Class (Command (..))
 import Data.Char (toUpper)
 import Data.List (sortOn)
+import Data.Maybe (fromMaybe)
 import Data.UUID (UUID)
 import Data.UUID qualified as UUID
 import Data.Void (Void)
 import Options.Applicative
+import Options.Applicative.Common (mapParser)
+import Options.Applicative.Help.Chunk (unChunk)
 import Options.Applicative.Help.Pretty (
   AnsiStyle,
   Color (..),
   Doc,
+  align,
   annotate,
   bold,
   color,
+  fill,
+  indent,
+  line,
   pretty,
   unAnnotate,
   underlined,
+  vsep,
   (<+>),
  )
+import Options.Applicative.Types (OptReader (..), Option (..))
 import System.Environment (getArgs, lookupEnv)
 import System.IO (hIsTerminalDevice, stderr, stdout)
 import Text.Megaparsec (Parsec, eof, errorBundlePretty, runParser)
@@ -273,3 +284,38 @@ usageWith s name version hdr p =
               )
           )
     )
+
+-- | 'usageWith' with the full 'commandTree' as footer.
+usageTreeWith
+  :: HelpStyle
+  -- ^ help style
+  -> String
+  -- ^ program name
+  -> String
+  -- ^ version
+  -> String
+  -- ^ description
+  -> Parser a
+  -- ^ arguments parser
+  -> ParserInfo a
+usageTreeWith s name version hdr p =
+  (usageWith s name version hdr p)
+    { infoFooter = pure (vsep ["Command tree:", indent 2 (commandTree p)])
+    }
+
+-- | Every command of a parser, hidden ones included, with nested subcommands indented under their
+-- parent.
+commandTree :: Parser a -> Doc
+commandTree = vsep . commands
+ where
+  commands :: Parser x -> [Doc]
+  commands = concat . mapParser (const entries)
+  entries :: Option x -> [Doc]
+  entries o = case optMain o of
+    CmdReader _ cs -> uncurry entry <$> cs
+    _ -> []
+  entry :: String -> ParserInfo x -> Doc
+  entry n i =
+    fill 12 (pretty n) <+> align (fromMaybe mempty (unChunk (infoProgDesc i))) <> case commands (infoParser i) of
+      [] -> mempty
+      sub -> line <> indent 2 (vsep sub)

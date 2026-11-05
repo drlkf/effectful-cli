@@ -1,7 +1,14 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.CLI.Impl (fromParsec, plainHelpStyle, reversibleSwitch, usage, usageWith)
+import Data.CLI.Impl (
+  commandTree,
+  fromParsec,
+  plainHelpStyle,
+  reversibleSwitch,
+  usage,
+  usageWith,
+ )
 import Data.Error.CLI (CLIError (..), displayCLIError)
 import Data.List (isInfixOf)
 import Effectful (Eff, IOE, liftIO, runEff)
@@ -97,3 +104,12 @@ main = hspec $ do
           , "prog - desc - version 1.0" `isInfixOf` render (usageWith plainHelpStyle)
           )
             `shouldBe` (True, False, True)
+
+  describe "commandTree"
+    $ it "renders nested and hidden commands"
+    $ let leaf n = command n (info (pure ()) (progDesc (n <> " desc")))
+          p =
+            subparser (leaf "a")
+              <|> subparser (hidden <> command "b" (info (subparser (leaf "c")) (progDesc "b desc")))
+       in show (commandTree p)
+            `shouldBe` "a            a desc\nb            b desc\n  c            c desc"
