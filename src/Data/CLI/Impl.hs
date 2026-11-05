@@ -213,7 +213,7 @@ mkCommand
   => a
   -- ^ command value
   -> Mod CommandFields a
-mkCommand a = command (cmdname a) (info (parser a) (progDesc (doc a)))
+mkCommand a = command (cmdname a) (info (parser a <**> helper) (progDesc (doc a)))
 
 -- | Build subcommands for every value of an enum, sorted by name and wrapped with the given constructor.
 --
