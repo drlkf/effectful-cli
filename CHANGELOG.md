@@ -1,3 +1,9 @@
+## [2.4.2](https://github.com/haskell-github-trust/effectful-cli/compare/2.4.1...2.4.2) (2026-11-05)
+
+### Bug Fixes
+
+* fix help flag in command subgroups ([58a5a23](https://github.com/haskell-github-trust/effectful-cli/commit/58a5a23385a2648f2f4980e1a2bbe1cd49ce829c))
+
 ## [2.4.1](https://github.com/haskell-github-trust/effectful-cli/compare/2.4.0...2.4.1) (2026-10-31)
 
 ## [2.4.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.3.0...2.4.0) (2026-10-31)
