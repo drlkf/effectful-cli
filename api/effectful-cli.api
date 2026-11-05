@@ -13,6 +13,7 @@ Data.CLI.Class.runner
 Data.CLI.Impl.HelpStyle
 Data.CLI.Impl.argOrOpt
 Data.CLI.Impl.colorEnabled
+Data.CLI.Impl.commandTree
 Data.CLI.Impl.defaultHelpStyle
 Data.CLI.Impl.execCLIParser
 Data.CLI.Impl.forceSwitch
@@ -26,6 +27,7 @@ Data.CLI.Impl.reversibleSwitch
 Data.CLI.Impl.styled
 Data.CLI.Impl.unboundEnumError
 Data.CLI.Impl.usage
+Data.CLI.Impl.usageTreeWith
 Data.CLI.Impl.usageWith
 Data.CLI.Impl.uuidArg
 Data.Error.CLI.CLIError

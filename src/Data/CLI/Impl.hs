@@ -286,6 +286,8 @@ usageWith s name version hdr p =
     )
 
 -- | 'usageWith' with the full 'commandTree' as footer.
+--
+-- @since 0.2.5.0
 usageTreeWith
   :: HelpStyle
   -- ^ help style
@@ -305,6 +307,8 @@ usageTreeWith s name version hdr p =
 
 -- | Every command of a parser, hidden ones included, with nested subcommands indented under their
 -- parent.
+--
+-- @since 0.2.5.0
 commandTree :: Parser a -> Doc
 commandTree = vsep . commands
  where

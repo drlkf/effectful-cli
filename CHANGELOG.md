@@ -1,3 +1,9 @@
+## [2.5.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.4.2...2.5.0) (2026-11-05)
+
+### Features
+
+* show whole command tree on help ([db5ad51](https://github.com/haskell-github-trust/effectful-cli/commit/db5ad51e5352c765bc73b292e8b2f004ebf44c9b))
+
 ## [2.4.2](https://github.com/haskell-github-trust/effectful-cli/compare/2.4.1...2.4.2) (2026-11-05)
 
 ### Bug Fixes
