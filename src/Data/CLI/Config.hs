@@ -22,6 +22,8 @@ import Options.Applicative (Parser, metavar, strArgument)
 import Toml.Schema (FromValue)
 
 -- | Application config @c@ that knows its config file and the type it decodes to.
+--
+-- @since 0.2.6.0
 class FromValue (ConfigOf c) => ConfigFile c where
   -- | Type the config file decodes to; 'ConfigSet' refuses to write anything else.
   type ConfigOf c :: Type
@@ -31,6 +33,8 @@ class FromValue (ConfigOf c) => ConfigFile c where
 
 -- | Config file commands for config @c@ and application error @e@. IO failures
 -- are raised as 'InputError'.
+--
+-- @since 0.2.6.0
 data ConfigCommand c e
   = -- | Print the config file.
     ConfigShow

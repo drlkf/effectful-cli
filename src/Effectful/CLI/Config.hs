@@ -36,6 +36,8 @@ import Toml.Pretty (prettyValue)
 import Toml.Schema (FromValue)
 
 -- | The config file's contents, empty if it does not exist.
+--
+-- @since 0.2.6.0
 readConfigText
   :: IOE :> es
   => FilePath
@@ -45,6 +47,8 @@ readConfigText path = liftIO $ do
   if exists then T.readFile path else pure ""
 
 -- | Render a dotted key's value: strings unquoted, tables as TOML sections.
+--
+-- @since 0.2.6.0
 getConfigKey
   :: IOE :> es
   => Error CLIError :> es
@@ -62,6 +66,8 @@ getConfigKey path key =
 -- | Set a dotted key to 'parseValue' of the raw input, creating intermediate
 -- tables; the file is only written if the result still decodes as @a@.
 -- Re-renders the whole file, dropping comments and formatting.
+--
+-- @since 0.2.6.0
 setConfigKey
   :: forall a es
    . FromValue a
@@ -92,6 +98,8 @@ readTable =
     <=< readConfigText
 
 -- | Value at a dotted key path, the empty path being the whole table.
+--
+-- @since 0.2.6.0
 lookupKey
   :: [Text]
   -> Table
@@ -104,6 +112,8 @@ lookupKey (k : ks) (MkTable m) = case (ks, snd <$> Map.lookup k m) of
 
 -- | Set a value at a dotted key path, creating missing tables; fails when a
 -- path segment is not a table.
+--
+-- @since 0.2.6.0
 setKey
   :: [Text]
   -> Value
@@ -119,6 +129,8 @@ setKey (k : ks) v (MkTable m) = case snd <$> Map.lookup k m of
   descend t = (\t' -> MkTable (Map.insert k ((), Table t') m)) <$> setKey ks v t
 
 -- | A TOML literal (@true@, @42@, @["a"]@, @"x"@), else the raw text as a string.
+--
+-- @since 0.2.6.0
 parseValue :: Text -> Value
 parseValue raw =
   either

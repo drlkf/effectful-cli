@@ -10,6 +10,17 @@ Data.CLI.Class.cmdname
 Data.CLI.Class.doc
 Data.CLI.Class.parser
 Data.CLI.Class.runner
+Data.CLI.Config.ConfigCommand
+Data.CLI.Config.ConfigGet
+Data.CLI.Config.ConfigSet
+Data.CLI.Config.ConfigShow
+Data.CLI.Config.Data.CLI.Config.ConfigFile c => Data.CLI.Class.Command c e (Data.CLI.Config.ConfigCommand c e)
+Data.CLI.Config.FromValue
+Data.CLI.Config.configFilePath
+Data.CLI.Config.forall k1 (c :: k1) k2 (e :: k2). GHC.Classes.Eq (Data.CLI.Config.ConfigCommand c e)
+Data.CLI.Config.forall k1 (c :: k1) k2 (e :: k2). GHC.Internal.Show.Show (Data.CLI.Config.ConfigCommand c e)
+Data.CLI.Config.forall k1 k2 (c :: k1) (e :: k2). GHC.Internal.Enum.Bounded (Data.CLI.Config.ConfigCommand c e)
+Data.CLI.Config.forall k1 k2 (c :: k1) (e :: k2). GHC.Internal.Enum.Enum (Data.CLI.Config.ConfigCommand c e)
 Data.CLI.Impl.HelpStyle
 Data.CLI.Impl.argOrOpt
 Data.CLI.Impl.colorEnabled
@@ -51,6 +62,12 @@ Effectful.CLI.Conc.mapConcurrently
 Effectful.CLI.Conc.mapConcurrently_
 Effectful.CLI.Conc.runConcurrently
 Effectful.CLI.Conc.runConcurrently_
+Effectful.CLI.Config.getConfigKey
+Effectful.CLI.Config.lookupKey
+Effectful.CLI.Config.parseValue
+Effectful.CLI.Config.readConfigText
+Effectful.CLI.Config.setConfigKey
+Effectful.CLI.Config.setKey
 Effectful.CLI.Exception.rethrowIO
 Effectful.CLI.IO.askForConfirm
 Effectful.CLI.IO.autoOpen
