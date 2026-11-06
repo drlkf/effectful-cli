@@ -67,26 +67,38 @@ getConfigKey path key =
 -- tables; the file is only written if the result still decodes as @a@.
 -- Re-renders the whole file, dropping comments and formatting.
 --
+-- When decoding fails and @key@ is a section of one of the known keys, the
+-- error says which keys to set instead.
+--
 -- @since 0.2.6.0
+--
+-- The known-keys argument was added in 0.2.7.0.
 setConfigKey
   :: forall a es
    . FromValue a
   => IOE :> es
   => Error CLIError :> es
-  => FilePath
+  => [Text]
+  -> FilePath
   -> Text
   -> Text
   -> Eff es ()
-setConfigKey path key raw = do
+setConfigKey known path key raw = do
   table <-
     either (throwError . InputError) pure . setKey (T.splitOn "." key) (parseValue raw)
       =<< readTable path
   let rendered = T.show (prettyToml table)
   case Toml.decode @a rendered of
-    Failure es -> throwError (InputError ("invalid config: " <> T.pack (unlines es)))
+    Failure es ->
+      throwError
+        (InputError ("invalid config: " <> T.stripEnd (T.pack (unlines es)) <> sectionHint))
     Success _ _ -> liftIO $ do
       createDirectoryIfMissing True (takeDirectory path)
       T.writeFile path rendered
+ where
+  sectionHint = case filter (T.isPrefixOf (key <> ".")) known of
+    [] -> ""
+    ks -> "; " <> key <> " is a section, set one of: " <> T.intercalate ", " ks
 
 readTable
   :: IOE :> es

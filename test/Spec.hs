@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.CLI.Impl (
@@ -24,6 +25,7 @@ import System.FilePath ((</>))
 import Test.Hspec
 import Text.Megaparsec.Char (string)
 import Toml (Table, Table' (..), Value' (..))
+import Toml.Schema (FromValue (..), parseTableFromValue, reqKey, reqKeyOf)
 
 isInputError :: Either CLIError a -> Bool
 isInputError (Left (InputError _)) = True
@@ -136,7 +138,21 @@ main = hspec $ do
     it "writes then reads a key through the file" $ do
       path <- (</> "effectful-cli-config-test.toml") <$> getTemporaryDirectory
       r <- runEff . runErrorNoCallStack @CLIError $ do
-        setConfigKey @Table path "a.b" "1"
+        setConfigKey @Table [] path "a.b" "1"
         getConfigKey path "a.b"
       removeFile path
       r `shouldBe` Right "1"
+
+    it "hints at known keys when a section is set to a scalar" $ do
+      path <- (</> "effectful-cli-config-hint-test.toml") <$> getTemporaryDirectory
+      r <-
+        runEff . runErrorNoCallStack @CLIError $
+          setConfigKey @Section ["sec.x", "sec.y", "other.z"] path "sec" "plain"
+      r `shouldSatisfy` \case
+        Left (InputError m) -> "sec is a section, set one of: sec.x, sec.y" `isInfixOf` show m
+        _ -> False
+
+newtype Section = Section Int
+
+instance FromValue Section where
+  fromValue = parseTableFromValue (Section <$> reqKeyOf "sec" (parseTableFromValue (reqKey "x")))

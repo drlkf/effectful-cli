@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -18,7 +19,7 @@ import Effectful.CLI.Exception (rethrowIO)
 import Effectful.CLI.IO (printOutputLn)
 import Effectful.Reader.Static (asks)
 import GHC.Enum (boundedEnumFrom, boundedEnumFromThen)
-import Options.Applicative (Parser, metavar, strArgument)
+import Options.Applicative (Parser, completer, listCompleter, metavar, strArgument)
 import Toml.Schema (FromValue)
 
 -- | Application config @c@ that knows its config file and the type it decodes to.
@@ -30,6 +31,11 @@ class FromValue (ConfigOf c) => ConfigFile c where
 
   -- | Path of the config file.
   configFilePath :: c -> FilePath
+
+  -- | Known dotted keys, used for shell completion and for hinting when a
+  -- section key is set to a scalar.
+  configKeys :: [Text]
+  configKeys = []
 
 -- | Config file commands for config @c@ and application error @e@. IO failures
 -- are raised as 'InputError'.
@@ -71,15 +77,18 @@ instance ConfigFile c => Command c e (ConfigCommand c e) where
   doc (ConfigSet _ _) = "Set a dotted key to a TOML literal, or a string if not one"
 
   parser ConfigShow = noArgs ConfigShow
-  parser (ConfigGet _) = ConfigGet <$> keyArg
-  parser (ConfigSet _ _) = ConfigSet <$> keyArg <*> strArgument (metavar "VALUE")
+  parser (ConfigGet _) = ConfigGet <$> keyArg (configKeys @c)
+  parser (ConfigSet _ _) = ConfigSet <$> keyArg (configKeys @c) <*> strArgument (metavar "VALUE")
 
   runner cmd = do
     path <- asks @c configFilePath
     rethrowIO (InputError . ("config file: " <>) . T.show) $ case cmd of
       ConfigShow -> printOutputLn . T.stripEnd =<< readConfigText path
       ConfigGet k -> printOutputLn =<< getConfigKey path k
-      ConfigSet k v -> setConfigKey @(ConfigOf c) path k v
+      ConfigSet k v -> setConfigKey @(ConfigOf c) (configKeys @c) path k v
 
-keyArg :: Parser Text
-keyArg = strArgument (metavar "KEY")
+keyArg
+  :: [Text]
+  -> Parser Text
+keyArg keys =
+  strArgument (metavar "KEY" <> completer (listCompleter (fmap T.unpack keys)))
