@@ -19,15 +19,74 @@ import Data.Traversable (mapAccumL)
 import Effectful (Eff, (:>))
 import Effectful.Concurrent.Async (
   Concurrent,
-  concurrently,
-  concurrently_,
-  forConcurrently,
-  forConcurrently_,
-  mapConcurrently,
-  mapConcurrently_,
   pooledMapConcurrentlyN,
   pooledMapConcurrentlyN_,
  )
+import Effectful.Concurrent.Async qualified as Async
+
+-- | Run two actions concurrently and return both results.
+concurrently
+  :: Concurrent :> es
+  => Eff es a
+  -- ^ first action
+  -> Eff es b
+  -- ^ second action
+  -> Eff es (a, b)
+concurrently = Async.concurrently
+
+-- | Like 'concurrently', discarding results.
+concurrently_
+  :: Concurrent :> es
+  => Eff es a
+  -- ^ first action
+  -> Eff es b
+  -- ^ second action
+  -> Eff es ()
+concurrently_ = Async.concurrently_
+
+-- | Map an action over a container concurrently, without a concurrency limit.
+mapConcurrently
+  :: Concurrent :> es
+  => Traversable t
+  => (a -> Eff es b)
+  -- ^ action for each element
+  -> t a
+  -- ^ elements
+  -> Eff es (t b)
+mapConcurrently = Async.mapConcurrently
+
+-- | Like 'mapConcurrently', discarding results.
+mapConcurrently_
+  :: Concurrent :> es
+  => Foldable f
+  => (a -> Eff es b)
+  -- ^ action for each element
+  -> f a
+  -- ^ elements
+  -> Eff es ()
+mapConcurrently_ = Async.mapConcurrently_
+
+-- | 'mapConcurrently' with its arguments flipped.
+forConcurrently
+  :: Concurrent :> es
+  => Traversable t
+  => t a
+  -- ^ elements
+  -> (a -> Eff es b)
+  -- ^ action for each element
+  -> Eff es (t b)
+forConcurrently = Async.forConcurrently
+
+-- | Like 'forConcurrently', discarding results.
+forConcurrently_
+  :: Concurrent :> es
+  => Foldable f
+  => f a
+  -- ^ elements
+  -> (a -> Eff es b)
+  -- ^ action for each element
+  -> Eff es ()
+forConcurrently_ = Async.forConcurrently_
 
 -- | Run all actions concurrently and collect their results.
 --

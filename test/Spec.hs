@@ -13,13 +13,17 @@ import Data.Error.CLI (CLIError (..), displayCLIError)
 import Data.List (isInfixOf)
 import Effectful (Eff, IOE, liftIO, runEff)
 import Effectful.CLI.Conc (batchConcurrentlyWithIndex)
+import Effectful.CLI.Config (getConfigKey, lookupKey, parseValue, setConfigKey, setKey)
 import Effectful.CLI.Exception (rethrowIO)
 import Effectful.CLI.IO (resolveIndex)
 import Effectful.Concurrent (runConcurrent)
 import Effectful.Error.Static (Error, runErrorNoCallStack)
 import Options.Applicative
+import System.Directory (getTemporaryDirectory, removeFile)
+import System.FilePath ((</>))
 import Test.Hspec
 import Text.Megaparsec.Char (string)
+import Toml (Table, Table' (..), Value' (..))
 
 isInputError :: Either CLIError a -> Bool
 isInputError (Left (InputError _)) = True
@@ -113,3 +117,26 @@ main = hspec $ do
               <|> subparser (hidden <> command "b" (info (subparser (leaf "c")) (progDesc "b desc")))
        in show (commandTree p)
             `shouldBe` "a            a desc\nb            b desc\n  c            c desc"
+
+  describe "config keys" $ do
+    it "parses TOML literals, falling back to strings" $
+      fmap parseValue ["true", "\"x\"", "plain"]
+        `shouldBe` [Bool True, Text "x", Text "plain"]
+
+    it "sets nested keys and reads them back" $
+      ( lookupKey ["a", "b", "c"]
+          =<< either (const Nothing) Just (setKey ["a", "b", "c"] (Text "t") (MkTable mempty))
+      )
+        `shouldBe` Just (Text "t")
+
+    it "refuses to descend into a scalar" $
+      (setKey ["a", "b"] (Bool True) =<< setKey ["a"] (Bool False) (MkTable mempty))
+        `shouldBe` Left "a is not a table"
+
+    it "writes then reads a key through the file" $ do
+      path <- (</> "effectful-cli-config-test.toml") <$> getTemporaryDirectory
+      r <- runEff . runErrorNoCallStack @CLIError $ do
+        setConfigKey @Table path "a.b" "1"
+        getConfigKey path "a.b"
+      removeFile path
+      r `shouldBe` Right "1"
