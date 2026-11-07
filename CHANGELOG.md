@@ -1,3 +1,9 @@
+## [2.7.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.6.0...2.7.0) (2026-11-07)
+
+### Features
+
+* add config functions completions ([4ec43cf](https://github.com/haskell-github-trust/effectful-cli/commit/4ec43cf6177da343e4dc9258598fc131751da502))
+
 ## [2.6.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.5.0...2.6.0) (2026-11-06)
 
 ### Features

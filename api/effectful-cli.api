@@ -17,6 +17,7 @@ Data.CLI.Config.ConfigShow
 Data.CLI.Config.Data.CLI.Config.ConfigFile c => Data.CLI.Class.Command c e (Data.CLI.Config.ConfigCommand c e)
 Data.CLI.Config.FromValue
 Data.CLI.Config.configFilePath
+Data.CLI.Config.configKeys
 Data.CLI.Config.forall k1 (c :: k1) k2 (e :: k2). GHC.Classes.Eq (Data.CLI.Config.ConfigCommand c e)
 Data.CLI.Config.forall k1 (c :: k1) k2 (e :: k2). GHC.Internal.Show.Show (Data.CLI.Config.ConfigCommand c e)
 Data.CLI.Config.forall k1 k2 (c :: k1) (e :: k2). GHC.Internal.Enum.Bounded (Data.CLI.Config.ConfigCommand c e)
