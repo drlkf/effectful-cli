@@ -49,6 +49,8 @@ readConfigText path = liftIO $ do
 
 -- | The config file decoded as @a@ (so defaults fill missing keys, and a
 -- missing file is all defaults), rendered back as TOML.
+--
+-- @since 0.2.8.0
 showConfig
   :: forall a es
    . FromValue a

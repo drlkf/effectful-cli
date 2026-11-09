@@ -1,3 +1,9 @@
+## [2.8.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.7.0...2.8.0) (2026-11-09)
+
+### Features
+
+* show all config in show command ([a9318f7](https://github.com/haskell-github-trust/effectful-cli/commit/a9318f7640627135fc8991f7bd5c835bcc47c55b))
+
 ## [2.7.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.6.0...2.7.0) (2026-11-07)
 
 ### Features

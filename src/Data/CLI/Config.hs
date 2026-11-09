@@ -30,6 +30,8 @@ import Toml.Schema (FromValue, ToTable)
 -- @since 0.2.6.0
 class (FromValue (ConfigOf c), ToTable (ConfigOf c)) => ConfigFile c where
   -- | Type the config file decodes to; 'ConfigSet' refuses to write anything else.
+  --
+  -- @since 0.2.8.0
   type ConfigOf c :: Type
 
   -- | Path of the config file.
