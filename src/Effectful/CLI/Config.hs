@@ -4,6 +4,7 @@
 -- | Read and edit a TOML config file by dotted key (@github.project.team@).
 module Effectful.CLI.Config (
   readConfigText,
+  showConfig,
   getConfigKey,
   setConfigKey,
   lookupKey,
@@ -33,7 +34,7 @@ import Toml (
  )
 import Toml qualified
 import Toml.Pretty (prettyValue)
-import Toml.Schema (FromValue)
+import Toml.Schema (FromValue, ToTable (toTable))
 
 -- | The config file's contents, empty if it does not exist.
 --
@@ -45,6 +46,21 @@ readConfigText
 readConfigText path = liftIO $ do
   exists <- doesFileExist path
   if exists then T.readFile path else pure ""
+
+-- | The config file decoded as @a@ (so defaults fill missing keys, and a
+-- missing file is all defaults), rendered back as TOML.
+showConfig
+  :: forall a es
+   . FromValue a
+  => ToTable a
+  => IOE :> es
+  => Error CLIError :> es
+  => FilePath
+  -> Eff es Text
+showConfig path =
+  readConfigText path >>= \raw -> case Toml.decode @a raw of
+    Failure es -> throwError (InputError ("invalid config: " <> T.stripEnd (T.pack (unlines es))))
+    Success _ a -> pure (T.stripEnd (T.show (prettyToml (toTable a))))
 
 -- | Render a dotted key's value: strings unquoted, tables as TOML sections.
 --

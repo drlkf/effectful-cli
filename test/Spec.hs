@@ -12,9 +12,17 @@ import Data.CLI.Impl (
  )
 import Data.Error.CLI (CLIError (..), displayCLIError)
 import Data.List (isInfixOf)
+import Data.Maybe (fromMaybe)
 import Effectful (Eff, IOE, liftIO, runEff)
 import Effectful.CLI.Conc (batchConcurrentlyWithIndex)
-import Effectful.CLI.Config (getConfigKey, lookupKey, parseValue, setConfigKey, setKey)
+import Effectful.CLI.Config (
+  getConfigKey,
+  lookupKey,
+  parseValue,
+  setConfigKey,
+  setKey,
+  showConfig,
+ )
 import Effectful.CLI.Exception (rethrowIO)
 import Effectful.CLI.IO (resolveIndex)
 import Effectful.Concurrent (runConcurrent)
@@ -25,7 +33,18 @@ import System.FilePath ((</>))
 import Test.Hspec
 import Text.Megaparsec.Char (string)
 import Toml (Table, Table' (..), Value' (..))
-import Toml.Schema (FromValue (..), parseTableFromValue, reqKey, reqKeyOf)
+import Toml.Schema (
+  FromValue (..),
+  ToTable (..),
+  ToValue (..),
+  defaultTableToValue,
+  optKey,
+  parseTableFromValue,
+  reqKey,
+  reqKeyOf,
+  table,
+  (.=),
+ )
 
 isInputError :: Either CLIError a -> Bool
 isInputError (Left (InputError _)) = True
@@ -151,6 +170,28 @@ main = hspec $ do
       r `shouldSatisfy` \case
         Left (InputError m) -> "sec is a section, set one of: sec.x, sec.y" `isInfixOf` show m
         _ -> False
+
+    it "shows defaults for a missing file and file values over them" $ do
+      dir <- getTemporaryDirectory
+      let missing = dir </> "effectful-cli-config-missing.toml"
+          present = dir </> "effectful-cli-config-show.toml"
+      writeFile present "n = 3\n"
+      r <-
+        runEff . runErrorNoCallStack @CLIError $
+          (,) <$> showConfig @Defaulted missing <*> showConfig @Defaulted present
+      removeFile present
+      r `shouldBe` Right ("n = 7", "n = 3")
+
+newtype Defaulted = Defaulted Int
+
+instance FromValue Defaulted where
+  fromValue = parseTableFromValue (Defaulted . fromMaybe 7 <$> optKey "n")
+
+instance ToValue Defaulted where
+  toValue = defaultTableToValue
+
+instance ToTable Defaulted where
+  toTable (Defaulted n) = table ["n" .= n]
 
 newtype Section = Section Int
 

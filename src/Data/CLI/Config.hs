@@ -14,18 +14,21 @@ import Data.Error.CLI (CLIError (InputError))
 import Data.Kind (Type)
 import Data.Text (Text)
 import Data.Text qualified as T
-import Effectful.CLI.Config (getConfigKey, readConfigText, setConfigKey)
+import Effectful.CLI.Config (getConfigKey, setConfigKey, showConfig)
 import Effectful.CLI.Exception (rethrowIO)
 import Effectful.CLI.IO (printOutputLn)
 import Effectful.Reader.Static (asks)
 import GHC.Enum (boundedEnumFrom, boundedEnumFromThen)
 import Options.Applicative (Parser, completer, listCompleter, metavar, strArgument)
-import Toml.Schema (FromValue)
+import Toml.Schema (FromValue, ToTable)
 
 -- | Application config @c@ that knows its config file and the type it decodes to.
 --
+-- 'ToTable' is needed by 'ConfigShow'; defaults come from the 'FromValue'
+-- instance filling missing keys.
+--
 -- @since 0.2.6.0
-class FromValue (ConfigOf c) => ConfigFile c where
+class (FromValue (ConfigOf c), ToTable (ConfigOf c)) => ConfigFile c where
   -- | Type the config file decodes to; 'ConfigSet' refuses to write anything else.
   type ConfigOf c :: Type
 
@@ -42,7 +45,7 @@ class FromValue (ConfigOf c) => ConfigFile c where
 --
 -- @since 0.2.6.0
 data ConfigCommand c e
-  = -- | Print the config file.
+  = -- | Print the effective config: file values over the defaults.
     ConfigShow
   | -- | Print a dotted key's value.
     ConfigGet Text
@@ -72,7 +75,7 @@ instance ConfigFile c => Command c e (ConfigCommand c e) where
   cmdname (ConfigGet _) = "get"
   cmdname (ConfigSet _ _) = "set"
 
-  doc ConfigShow = "Print the config file"
+  doc ConfigShow = "Print the effective config (file merged over defaults)"
   doc (ConfigGet _) = "Print a dotted key's value (e.g. section.key)"
   doc (ConfigSet _ _) = "Set a dotted key to a TOML literal, or a string if not one"
 
@@ -83,7 +86,7 @@ instance ConfigFile c => Command c e (ConfigCommand c e) where
   runner cmd = do
     path <- asks @c configFilePath
     rethrowIO (InputError . ("config file: " <>) . T.show) $ case cmd of
-      ConfigShow -> printOutputLn . T.stripEnd =<< readConfigText path
+      ConfigShow -> printOutputLn =<< showConfig @(ConfigOf c) path
       ConfigGet k -> printOutputLn =<< getConfigKey path k
       ConfigSet k v -> setConfigKey @(ConfigOf c) (configKeys @c) path k v
 
