@@ -1,3 +1,9 @@
+## [2.9.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.8.0...2.9.0) (2026-11-09)
+
+### Features
+
+* add config help command ([8776329](https://github.com/haskell-github-trust/effectful-cli/commit/87763296d29a30691671ccf0ed938312843a2302))
+
 ## [2.8.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.7.0...2.8.0) (2026-11-09)
 
 ### Features

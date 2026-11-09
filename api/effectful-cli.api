@@ -12,10 +12,12 @@ Data.CLI.Class.parser
 Data.CLI.Class.runner
 Data.CLI.Config.ConfigCommand
 Data.CLI.Config.ConfigGet
+Data.CLI.Config.ConfigHelp
 Data.CLI.Config.ConfigOf
 Data.CLI.Config.ConfigSet
 Data.CLI.Config.ConfigShow
 Data.CLI.Config.Data.CLI.Config.ConfigFile c => Data.CLI.Class.Command c e (Data.CLI.Config.ConfigCommand c e)
+Data.CLI.Config.configDocs
 Data.CLI.Config.configFilePath
 Data.CLI.Config.configKeys
 Data.CLI.Config.forall k1 (c :: k1) k2 (e :: k2). GHC.Classes.Eq (Data.CLI.Config.ConfigCommand c e)
