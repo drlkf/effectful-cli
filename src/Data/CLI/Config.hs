@@ -42,6 +42,10 @@ class (FromValue (ConfigOf c), ToTable (ConfigOf c)) => ConfigFile c where
   configKeys :: [Text]
   configKeys = []
 
+  -- | Description of each dotted key, printed by 'ConfigHelp'.
+  configDocs :: [(Text, Text)]
+  configDocs = (,"") <$> configKeys @c
+
 -- | Config file commands for config @c@ and application error @e@. IO failures
 -- are raised as 'InputError'.
 --
@@ -53,20 +57,24 @@ data ConfigCommand c e
     ConfigGet Text
   | -- | Set a dotted key to a TOML literal, or a string if not one.
     ConfigSet Text Text
+  | -- | Describe every known key.
+    ConfigHelp
   deriving (Eq, Show)
 
 instance Bounded (ConfigCommand c e) where
   minBound = ConfigShow
-  maxBound = ConfigSet mempty mempty
+  maxBound = ConfigHelp
 
 instance Enum (ConfigCommand c e) where
   fromEnum ConfigShow = 0
   fromEnum (ConfigGet _) = 1
   fromEnum (ConfigSet _ _) = 2
+  fromEnum ConfigHelp = 3
 
   toEnum 0 = minBound
   toEnum 1 = ConfigGet mempty
-  toEnum 2 = maxBound
+  toEnum 2 = ConfigSet mempty mempty
+  toEnum 3 = maxBound
   toEnum _ = unboundEnumError "ConfigCommand"
 
   enumFrom = boundedEnumFrom
@@ -76,14 +84,18 @@ instance ConfigFile c => Command c e (ConfigCommand c e) where
   cmdname ConfigShow = "show"
   cmdname (ConfigGet _) = "get"
   cmdname (ConfigSet _ _) = "set"
+  cmdname ConfigHelp = "help"
 
   doc ConfigShow = "Print the effective config (file merged over defaults)"
   doc (ConfigGet _) = "Print a dotted key's value (e.g. section.key)"
   doc (ConfigSet _ _) = "Set a dotted key to a TOML literal, or a string if not one"
+  doc ConfigHelp = "Describe every config key"
 
   parser ConfigShow = noArgs ConfigShow
   parser (ConfigGet _) = ConfigGet <$> keyArg (configKeys @c)
-  parser (ConfigSet _ _) = ConfigSet <$> keyArg (configKeys @c) <*> strArgument (metavar "VALUE")
+  parser (ConfigSet _ _) =
+    ConfigSet <$> keyArg (configKeys @c) <*> strArgument (metavar "VALUE")
+  parser ConfigHelp = noArgs ConfigHelp
 
   runner cmd = do
     path <- asks @c configFilePath
@@ -91,6 +103,15 @@ instance ConfigFile c => Command c e (ConfigCommand c e) where
       ConfigShow -> printOutputLn =<< showConfig @(ConfigOf c) path
       ConfigGet k -> printOutputLn =<< getConfigKey path k
       ConfigSet k v -> setConfigKey @(ConfigOf c) (configKeys @c) path k v
+      ConfigHelp -> printOutputLn (helpText (configDocs @c))
+
+helpText :: [(Text, Text)] -> Text
+helpText docs =
+  T.intercalate
+    "\n"
+    [T.justifyLeft w ' ' k <> "  " <> d | (k, d) <- docs]
+ where
+  w = maximum (0 : fmap (T.length . fst) docs)
 
 keyArg
   :: [Text]
