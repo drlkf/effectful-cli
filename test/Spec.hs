@@ -137,7 +137,7 @@ main = hspec $ do
             subparser (leaf "a")
               <|> subparser (hidden <> command "b" (info (subparser (leaf "c")) (progDesc "b desc")))
        in show (commandTree p)
-            `shouldBe` "a            a desc\nb            b desc\n  c            c desc"
+            `shouldBe` "a a desc\nb b desc\n  c c desc\n"
 
   describe "config keys" $ do
     it "parses TOML literals, falling back to strings" $

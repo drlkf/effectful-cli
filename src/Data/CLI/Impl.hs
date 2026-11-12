@@ -313,13 +313,16 @@ commandTree :: Parser a -> Doc
 commandTree = vsep . commands
  where
   commands :: Parser x -> [Doc]
-  commands = concat . mapParser (const entries)
-  entries :: Option x -> [Doc]
+  commands p = (\(n, b) -> fill w (pretty n) <+> b) <$> cs
+   where
+    cs = concat (mapParser (const entries) p)
+    w = maximum (0 : fmap (length . fst) cs)
+  entries :: Option x -> [(String, Doc)]
   entries o = case optMain o of
-    CmdReader _ cs -> uncurry entry <$> cs
+    CmdReader _ cs -> fmap body <$> cs
     _ -> []
-  entry :: String -> ParserInfo x -> Doc
-  entry n i =
-    fill 12 (pretty n) <+> align (fromMaybe mempty (unChunk (infoProgDesc i))) <> case commands (infoParser i) of
+  body :: ParserInfo x -> Doc
+  body i =
+    align (fromMaybe mempty (unChunk (infoProgDesc i))) <> case commands (infoParser i) of
       [] -> mempty
       sub -> line <> indent 2 (vsep sub) <> line
