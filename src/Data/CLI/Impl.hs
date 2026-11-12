@@ -322,4 +322,4 @@ commandTree = vsep . commands
   entry n i =
     fill 12 (pretty n) <+> align (fromMaybe mempty (unChunk (infoProgDesc i))) <> case commands (infoParser i) of
       [] -> mempty
-      sub -> line <> indent 2 (vsep sub)
+      sub -> line <> indent 2 (vsep sub) <> line
