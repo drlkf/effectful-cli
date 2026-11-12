@@ -1,3 +1,10 @@
+## [2.9.1](https://github.com/haskell-github-trust/effectful-cli/compare/2.9.0...2.9.1) (2026-11-12)
+
+### Bug Fixes
+
+* command sub-tree ends with empty line ([ef39f09](https://github.com/haskell-github-trust/effectful-cli/commit/ef39f0919ac65c6711afec26f51bf4fc04a78355))
+* fix alignment issues when command names are too long ([791f618](https://github.com/haskell-github-trust/effectful-cli/commit/791f618226d4eccba2062ea2ef8d47b1656b5e98))
+
 ## [2.9.0](https://github.com/haskell-github-trust/effectful-cli/compare/2.8.0...2.9.0) (2026-11-09)
 
 ### Features
