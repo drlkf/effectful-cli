@@ -31,6 +31,7 @@ import Effectful.Error.Static (Error, throwError)
 import Effectful.Process (Process, callProcess)
 import Effectful.Reader.Static (Reader, ask)
 import System.IO (hFlush, stderr)
+import System.Info (os)
 import Text.Layout.Table (columnHeaderTableS, def, rowsG, tableString, titlesH, unicodeS)
 import Text.Megaparsec (Parsec, eof, errorBundlePretty, runParser, (<|>))
 import Text.Megaparsec.Char (string')
@@ -139,7 +140,7 @@ withConfirm action = do
     unless ok $ throwError (UserCanceled Nothing)
   action
 
--- | Open a file or URL with @xdg-open@.
+-- | Open a file or URL with @open@ on macOS, @xdg-open@ elsewhere.
 --
 -- @since 0.1.0.0
 autoOpen
@@ -147,7 +148,7 @@ autoOpen
   => String
   -- ^ file path or URL
   -> Eff es ()
-autoOpen arg = callProcess "xdg-open" [arg]
+autoOpen arg = callProcess (if os == "darwin" then "open" else "xdg-open") [arg]
 
 -- | Let the user pick one item from a table; a single item is returned without prompting, none throws 'NotFoundError'.
 --
