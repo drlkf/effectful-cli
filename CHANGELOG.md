@@ -1,3 +1,9 @@
+## [2.9.2](https://github.com/haskell-github-trust/effectful-cli/compare/2.9.1...2.9.2) (2026-11-13)
+
+### Bug Fixes
+
+* autoOpen for macos ([097c571](https://github.com/haskell-github-trust/effectful-cli/commit/097c571a1052776e3cb4c1a8b385f21359e561fc))
+
 ## [2.9.1](https://github.com/haskell-github-trust/effectful-cli/compare/2.9.0...2.9.1) (2026-11-12)
 
 ### Bug Fixes
